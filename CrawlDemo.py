@@ -54,9 +54,6 @@ def handleHtml(url,html):
     # 挖百度云地址
 
     panPWPattern = re.compile(">(https://pan.baidu.com.+?)&nbsp")
-
-    # 和上面的带密码的重复 老资源舍弃
-    # panOldBtnNPWPattern=re.compile("href=\"(https://pan.baidu.com.+?)\"")
     panNewBtnNPWPattern = re.compile("window.open\('(https://pan.baidu.com.+?)'")
     panUrlList = re.findall(panPWPattern, html)
     # panUrlList+=re.findall(panOldBtnNPWPattern,html)
@@ -64,14 +61,6 @@ def handleHtml(url,html):
     panUrlList = list(map(lambda item: re.sub(r"</a>", " ", item), panUrlList))
 
     if len(panUrlList)==0:
-        # 挖标题
-        # titleUrlPattern = re.compile("<h2 class=\"post-title\">(.+?)</h2>")
-        # titleList = re.findall(titleUrlPattern, html)
-        # if len(titleList)!=0:
-        #     title=titleList[0]
-        # else:
-        #     title="无标题"
-        # print("网页标题："+title+" 地址："+url+" 没有资源")
         return
     # 挖图片
     newImgPattern = re.compile("<a class=\"pics\" href=\"(.+?)\"")
@@ -111,12 +100,6 @@ def handleHtml(url,html):
     rowList.append(url)
     row=df.shape[0]+1
     df.loc[row]=rowList
-    # print(row)
-    # if row %100==0:
-    # filename=time.strftime('%Y_%m_%d_%H_%M_%S',time.localtime(time.time()))
-    # while row !=1:
-    #     df.drop(row-1)
-
 
 def climbSrc(list):
         time.sleep(5)
@@ -127,12 +110,10 @@ def climbSrc(list):
                 for indexUrl in list:
                     url=rawUrl +'/'+ indexUrl
                     html = requests.get(url, timeout=10, headers=headers).text
-                    # print("请求成功")
 
                     handleHtml(url,html)
 
                 list.clear()
-                # print("释放")
                 print("数据解析完成")
                 semaphore.release()
                 df.to_excel('D:\\小刀网当前数据.xls', encoding='utf-8', index=False, header=True)
@@ -142,9 +123,7 @@ def climbSrc(list):
 
 if __name__ == '__main__':
     articleUrlList=[]
-    # cond = threading.Condition()
-    # threading.Thread(target=climbPage, args=(articleUrlList,cond)).start()
-    # threading.Thread(target=climbSrc, args=(articleUrlList,cond)).start()
+
     climbPageThread=Thread(target=climbPage,args=(articleUrlList))
     climbSrcThread=Thread(target=climbSrc,args=(articleUrlList))
     climbSrcThread.start()
